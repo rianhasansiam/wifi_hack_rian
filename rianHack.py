@@ -18,11 +18,15 @@ import csv
 from typing import Dict
 
 print('''
-\033[1;92m Recoded By THBD
-BiRi_B@B@
-Telegram:https://t.me/termux_hacker_bd
-One line Command:\nsudo python Wifi_Hack/birihack.py -i wlan0 -K\n
-For Help Type:\npython Wifi_Hack/birihack.py --help\033[0m
+\033[1;92m╔═══════════════════════════════════════════════════════╗
+║           WPS PIN Recovery Tool v1.0                 ║
+║           Developed by: Rian Hasan Siam              ║
+║           GitHub: rianhasansiam/wifi_hack_rian       ║
+╚═══════════════════════════════════════════════════════╝\033[0m
+
+\033[1;93m⚠️  FOR EDUCATIONAL PURPOSES ONLY ⚠️\033[0m
+\033[1;36mQuick Start: sudo python rianHack.py -i wlan0 -K
+Help: python rianHack.py --help\033[0m
 ''')
 class NetworkAddress:
     def __init__(self, mac):
@@ -429,8 +433,8 @@ class Companion:
         self.connection_status = ConnectionStatus()
 
         user_home = str(pathlib.Path.home())
-        self.sessions_dir = f'{user_home}/.BiRi/sessions/'
-        self.pixiewps_dir = f'{user_home}/.BiRi/pixiewps/'
+        self.sessions_dir = f'{user_home}/.wifi_hack_rian/sessions/'
+        self.pixiewps_dir = f'{user_home}/.wifi_hack_rian/pixiewps/'
         self.reports_dir = os.path.dirname(os.path.realpath(__file__)) + '/reports/'
         if not os.path.exists(self.sessions_dir):
             os.makedirs(self.sessions_dir)
@@ -442,22 +446,40 @@ class Companion:
     def __init_wpa_supplicant(self):
         print('[*] Running wpa_supplicant…')
         cmd = 'wpa_supplicant -K -d -Dnl80211,wext,hostapd,wired -i{} -c{}'.format(self.interface, self.tempconf)
-        self.wpas = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT, encoding='utf-8', errors='replace')
-        # Waiting for wpa_supplicant control interface initialization
+        try:
+            self.wpas = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                                         stderr=subprocess.STDOUT, encoding='utf-8', errors='replace')
+        except Exception as e:
+            print(f'[!] Failed to start wpa_supplicant: {e}')
+            raise
+        
+        # Waiting for wpa_supplicant control interface initialization with timeout
+        timeout = 10  # seconds
+        start_time = time.time()
         while not os.path.exists(self.wpas_ctrl_path):
-            pass
+            if time.time() - start_time > timeout:
+                self.wpas.terminate()
+                raise TimeoutError('wpa_supplicant control interface initialization timeout')
+            time.sleep(0.1)
 
     def sendOnly(self, command):
         """Sends command to wpa_supplicant"""
         self.retsock.sendto(command.encode(), self.wpas_ctrl_path)
 
-    def sendAndReceive(self, command):
+    def sendAndReceive(self, command, timeout=5):
         """Sends command to wpa_supplicant and returns the reply"""
-        self.retsock.sendto(command.encode(), self.wpas_ctrl_path)
-        (b, address) = self.retsock.recvfrom(4096)
-        inmsg = b.decode('utf-8', errors='replace')
-        return inmsg
+        try:
+            self.retsock.settimeout(timeout)
+            self.retsock.sendto(command.encode(), self.wpas_ctrl_path)
+            (b, address) = self.retsock.recvfrom(4096)
+            inmsg = b.decode('utf-8', errors='replace')
+            return inmsg
+        except socket.timeout:
+            print(f'[!] Timeout waiting for response to command: {command}')
+            return 'TIMEOUT'
+        except Exception as e:
+            print(f'[!] Error sending command: {e}')
+            return 'ERROR'
 
     def __handle_wpas(self, pixiemode=False, verbose=None):
         if not verbose:
@@ -789,20 +811,49 @@ class Companion:
                 self.__second_half_bruteforce(bssid, f_half, s_half, delay)
             raise KeyboardInterrupt
         except KeyboardInterrupt:
-            print("\nAborting…\nStay With\nTHBD")
+            print("\n[!] Operation aborted by user")
             filename = self.sessions_dir + '{}.run'.format(bssid.replace(':', '').upper())
-            with open(filename, 'w') as file:
-                file.write(self.bruteforce.mask)
-            print('[i] Session saved in {}'.format(filename))
+            try:
+                with open(filename, 'w') as file:
+                    file.write(self.bruteforce.mask)
+                print('[i] Session saved in {}'.format(filename))
+            except Exception as e:
+                print(f'[!] Failed to save session: {e}')
             if args.loop:
                 raise KeyboardInterrupt
 
     def cleanup(self):
-        self.retsock.close()
-        self.wpas.terminate()
-        os.remove(self.res_socket_file)
-        shutil.rmtree(self.tempdir, ignore_errors=True)
-        os.remove(self.tempconf)
+        """Clean up resources safely"""
+        try:
+            if hasattr(self, 'retsock'):
+                self.retsock.close()
+        except Exception:
+            pass
+        
+        try:
+            if hasattr(self, 'wpas'):
+                self.wpas.terminate()
+                self.wpas.wait(timeout=5)
+        except Exception:
+            pass
+        
+        try:
+            if hasattr(self, 'res_socket_file') and os.path.exists(self.res_socket_file):
+                os.remove(self.res_socket_file)
+        except Exception:
+            pass
+        
+        try:
+            if hasattr(self, 'tempdir'):
+                shutil.rmtree(self.tempdir, ignore_errors=True)
+        except Exception:
+            pass
+        
+        try:
+            if hasattr(self, 'tempconf') and os.path.exists(self.tempconf):
+                os.remove(self.tempconf)
+        except Exception:
+            pass
 
     def __del__(self):
         self.cleanup()
@@ -1033,7 +1084,7 @@ def die(msg):
 
 def usage():
     return """
-OneShotPin 0.0.2 (c) 2017 rofl0r, modded by BiRi_B@B@
+WPS PIN Recovery Tool v1.0 - Developed by Rian Hasan Siam
 
 %(prog)s <arguments>
 
@@ -1057,8 +1108,10 @@ Advanced arguments:
     -r, --reverse-scan       : Reverse order of networks in the list of networks. Useful on small displays
     -v, --verbose            : Verbose output
 
-Example:
+Examples:
+    %(prog)s -i wlan0 -K
     %(prog)s -i wlan0 -b 00:90:4C:C1:AC:21 -K
+    %(prog)s -i wlan0 -b 00:90:4C:C1:AC:21 -B -d 1.5
 """
 
 
@@ -1066,7 +1119,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='OneShotPin 0.0.2 (c) 2017 rofl0r, modded by BiRi_B@B@',
+        description='WPS PIN Recovery Tool v1.0 - Developed by Rian Hasan Siam',
         epilog='Example: %(prog)s -i wlan0 -b 00:90:4C:C1:AC:21 -K'
         )
 
@@ -1145,10 +1198,23 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # Version check
     if sys.hexversion < 0x03060F0:
-        die("The program requires Python 3.6 and above")
-    if os.getuid() != 0:
-        die("Run it as root")
+        die("[!] Error: This program requires Python 3.6 or above")
+    
+    # Root check
+    try:
+        if os.getuid() != 0:
+            die("[!] Error: This script must be run as root (use sudo)")
+    except AttributeError:
+        # Windows doesn't have getuid, check for admin privileges
+        import ctypes
+        try:
+            is_admin = ctypes.windll.shell32.IsUserAnAdmin()
+            if not is_admin:
+                die("[!] Error: This script must be run as administrator")
+        except Exception:
+            print("[!] Warning: Could not verify administrator privileges")
 
     if not ifaceUp(args.interface):
         die('Unable to up interface "{}"'.format(args.interface))
@@ -1180,12 +1246,12 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             if args.loop:
                 if input("\n[?] Exit the script (otherwise continue to AP scan)? [N/y] ").lower() == 'y':
-                    print("Aborting…\nStay With\nTHBD")
+                    print("\n[*] Exiting script. Thank you for using WPS PIN Recovery Tool!")
                     break
                 else:
                     args.bssid = None
             else:
-                print("\nAborting…\nStay With\nTHBD")
+                print("\n[*] Operation cancelled. Exiting...")
                 break
 
     if args.iface_down:
