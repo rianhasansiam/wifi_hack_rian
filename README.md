@@ -2,7 +2,7 @@
 
 A powerful WPS (Wi-Fi Protected Setup) penetration testing tool for security research and network auditing. This tool helps security professionals test the vulnerability of WPS-enabled routers using Pixie Dust attacks and online brute-force methods.
 
-<p align="center"><img src="https://i.ibb.co/K74g0SC/hulu.jpg"></p>
+
 
 ## ⚠️ Legal Disclaimer
 
@@ -33,7 +33,7 @@ This tool is designed for security research and penetration testing on networks 
 
 ## 🚀 Installation
 
-### Method 1: Automated Installation (Recommended)
+### Step 1: Automated Installation All Needed files
 
 ```bash
 # Update packages
@@ -43,14 +43,14 @@ pkg update && pkg upgrade
 pkg install git python
 
 # Clone the installer
-git clone https://github.com/Mahfuz-THBD/Wifi_Hack_Installer
-cd Wifi_Hack_Installer
+git clone https://github.com/rianhasansiam/wifi_hack_rian.git
+cd wifi_hack_rian
 
 # Run installer
 python rianIntaller.py
 ```
 
-### Method 2: Manual Installation
+### step 2: Now Start main step
 
 ```bash
 # Update system
@@ -62,10 +62,6 @@ pkg install -y root-repo
 # Install all dependencies
 pkg install -y git tsu python wpa-supplicant pixiewps iw
 
-# Clone the repository
-git clone https://github.com/Mahfuz-THBD/Wifi_Hack
-cd Wifi_Hack
-
 # Set permissions
 chmod +x rianHack.py
 
@@ -75,7 +71,7 @@ sudo python rianHack.py --help
 
 ## 📖 Usage
 
-### Basic Commands
+### After Installation Use this Basic Commands which one you need...
 
 **Scan networks and launch Pixie Dust attack:**
 ```bash
@@ -100,30 +96,6 @@ sudo python rianHack.py -i wlan0 -b 00:90:4C:C1:AC:21 -B -p 1234
 **Test specific PIN:**
 ```bash
 sudo python rianHack.py -i wlan0 -b 00:90:4C:C1:AC:21 -p 12345670
-```
-
-### Advanced Options
-
-```bash
-sudo python rianHack.py [OPTIONS]
-
-Required Arguments:
-  -i, --interface <wlan0>     Wireless interface name
-
-Optional Arguments:
-  -b, --bssid <MAC>           Target AP BSSID
-  -p, --pin <PIN>             Specific WPS PIN to test
-  -K, --pixie-dust            Run Pixie Dust attack
-  -B, --bruteforce            Run online brute-force attack
-  -d, --delay <seconds>       Delay between PIN attempts
-  -w, --write                 Save credentials to file
-  -F, --pixie-force           Force full Pixiewps range
-  -X, --show-pixie-cmd        Display Pixiewps command
-  -l, --loop                  Continuous scanning mode
-  -r, --reverse-scan          Reverse network list order
-  -v, --verbose               Enable verbose output
-  --iface-down                Down interface when finished
-  --vuln-list <file>          Custom vulnerable devices list
 ```
 
 ## 🔧 Troubleshooting
@@ -159,15 +131,6 @@ ip link show
 iw dev
 ```
 
-## 📁 Project Structure
-
-```
-Wifi_Hack/
-├── rianHack.py          # Main attack script (1,193 lines)
-├── rianIntaller.py      # Automated installation script
-├── README.md            # Documentation
-└── vulnwsc.txt          # Vulnerable devices database (142+ models)
-```
 
 ## 🎯 Attack Modes Explained
 
@@ -198,42 +161,11 @@ The tool includes PIN generation algorithms for:
 - Edimax
 - And many more...
 
-## 📊 Output Files
 
-Successful attacks save credentials to:
-- `reports/stored.txt` - Human-readable format
-- `reports/stored.csv` - Spreadsheet format
-- `~/.BiRi/sessions/` - Brute-force session data
-- `~/.BiRi/pixiewps/` - Calculated PINs
-
-## 🤝 Credits
-
-**Original Developer**: rofl0r (OneShotPin)  
-**Modified By**: THBD (BiRi_B@B@)  
-**Telegram**: [@termux_hacker_bd](https://t.me/termux_hacker_bd)
 
 ## 📜 License
 
 This project is open source and available for educational purposes.
 
-## ⚡ Quick Start Example
-
-```bash
-# 1. Install (one-time setup)
-pkg update && pkg install -y git python
-git clone https://github.com/Mahfuz-THBD/Wifi_Hack
-cd Wifi_Hack
-
-# 2. Run automated installer
-python rianIntaller.py
-
-# 3. Start attacking (from home directory)
-cd ~
-sudo python Wifi_Hack/rianHack.py -i wlan0 -K
-```
-
----
 
 **Note**: Always turn OFF your WiFi before running the script to avoid interface conflicts.
-
-**Repository**: [https://github.com/Mahfuz-THBD/Wifi_Hack](https://github.com/Mahfuz-THBD/Wifi_Hack)
